@@ -1,35 +1,45 @@
 #!/usr/bin/env python3
-"""
-3-app Module
-
-Flask app with Babel setup for handling localization. The Babel extension is configured to support English and French languages, with English as the default. This module uses the _ function (alias for gettext) to fetch localized text based on the user's locale. It helps in rendering templates with language-specific content.
-
-The locale is determined dynamically based on the client's request headers, prioritizing the languages configured in the app.
-"""
+'''Task 2: Get locale from request
+'''
 
 from flask import Flask, render_template, request
-from flask_babel import Babel, _   # _ is an alias for gettext, used for fetching localized text
+from flask_babel import Babel
 
-app = Flask(__name__)
-babel = Babel(app)
 
 class Config:
-    """Configuration class for Flask app with localization settings."""
-    LANGUAGES = ['en', 'fr']
-    BABEL_DEFAULT_LOCALE = 'en'
-    BABEL_DEFAULT_TIMEZONE = 'UTC'
+    '''Config class'''
 
+    DEBUG = True
+    LANGUAGES = ["en", "fr"]
+    BABEL_DEFAULT_LOCALE = "en"
+    BABEL_DEFAULT_TIMEZONE = "UTC"
+
+
+app = Flask(__name__)
 app.config.from_object(Config)
+app.url_map.strict_slashes = False
+babel = Babel(app)
+
 
 @babel.localeselector
-def get_locale():
-    """Select the best matching language from client request."""
+def get_locale() -> str:
+    """Retrieves the locale for a web page.
+
+    Returns:
+        str: best match
+    """
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
-@app.route('/')
-def index():
-    """Home page route using localized text for title and header."""
-    return render_template('3-index.html', title=_('home_title'), header=_('home_header'))
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+@app.route('/')
+def index() -> str:
+    '''default route
+
+    Returns:
+        html: homepage
+    '''
+    return render_template("2-index.html")
+
+
+if __name__ == "__main__":
+    app.run()
