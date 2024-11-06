@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-6-app Module
+7-app Module
 
 Flask app with Babel setup, locale selection based on user preferences,
-template parametrization, URL parameter locale support, and user
-login emulation.
+template parametrization, URL parameter locale support, user login emulation,
+and timezone inference.
 """
 
 from flask import Flask, render_template, request, g
-from flask_babel import Babel, _
+from flask_babel import Babel, _, get_timezone
+
+import pytz
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -56,10 +58,30 @@ def get_locale():
     return app.config['BABEL_DEFAULT_LOCALE']
 
 
+@babel.timezoneselector
+def get_timezone():
+    """Determine the best match for the supported timezones."""
+    if 'timezone' in request.args:
+        try:
+            pytz.timezone(request.args['timezone'])
+            return request.args['timezone']
+        except pytz.exceptions.UnknownTimeZoneError:
+            pass
+
+    if g.user and g.user['timezone']:
+        try:
+            pytz.timezone(g.user['timezone'])
+            return g.user['timezone']
+        except pytz.exceptions.UnknownTimeZoneError:
+            pass
+
+    return app.config['BABEL_DEFAULT_TIMEZONE']
+
+
 @app.route('/')
 def index():
     """Route to render index.html."""
-    return render_template('6-index.html', title=_('home_title'),
+    return render_template('7-index.html', title=_('home_title'),
                            header=_('home_header'))
 
 
